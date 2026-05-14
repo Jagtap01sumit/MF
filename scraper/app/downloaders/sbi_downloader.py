@@ -1,47 +1,99 @@
-import os
-
 from app.core.base_downloader import BaseDownloader
 
+from app.core.page_actions import PageActions
 
-class SBIDownloader(BaseDownloader):
+from app.core.file_downloader import DownloadManager
 
-    SBI_URL = "https://www.sbimf.com/portfolios"
+from app.exceptions.exception import (
+    FileNotFoundException,
+    DownloadException
+)
+
+from app.scrapers.sbi.sbi_config import SBIConfig
+
+
+class SBIDownloader(
+    BaseDownloader,
+    DownloadManager
+):
 
     def __init__(self, page):
+
         self.page = page
+
+        self.actions = PageActions(page)
+
+    def get_latest_portfolio_button(self):
+
+        try:
+
+            xpath = (
+                SBIConfig.PORTFOLIO_ROW_XPATH +
+                SBIConfig.XLSX_BUTTON_RELATIVE_XPATH
+            )
+
+            button = self.actions.get_locator(xpath)
+
+            return button
+
+        except Exception as e:
+
+            print(
+                f"[ERROR] Failed to get latest portfolio button: {e}"
+            )
+
+            raise FileNotFoundException(
+                "Unable to locate SBI portfolio download button."
+            )
 
     def download_latest_portfolio(self):
 
-        self.page.goto(self.SBI_URL)
+        try:
 
-        self.page.wait_for_timeout(5000)
+            self.actions.navigate(
+                SBIConfig.URL
+            )
 
-        download_buttons = self.page.locator("(//td[contains(normalize-space(),'All Schemes Monthly Portfolio')])[1]/../td[4]")
+            self.actions.wait(5000)
 
-        count = download_buttons.count()
+            button = (
+                self.get_latest_portfolio_button()
+            )
 
-        for i in range(count):
+            print(
+                f"Button Locator: {button}"
+            )
 
-            element = download_buttons.nth(i)
+            with self.page.expect_download() as d:
 
-            text = element.inner_text()
+                button.click()
 
-           
+            download = d.value
 
-            with self.page.expect_download() as download_info:
-                element.click()
+            file_path = self.save_download(
+                download
+            )
 
-            download = download_info.value
+            print(
+                f"Downloaded: {file_path}"
+            )
 
-            save_path = os.path.join(
-                    "app/downloads",
-                    download.suggested_filename
-                )
+            return file_path
 
-            download.save_as(save_path)
+        except FileNotFoundException as e:
 
-            print(f"Downloaded: {save_path}")
+            print(
+                f"[FILE NOT FOUND ERROR] {e}"
+            )
 
-            return save_path
+            raise
 
-        raise Exception("No XLSX file found")
+        except Exception as e:
+
+            print(
+                f"[DOWNLOAD ERROR] {e}"
+            )
+
+            raise DownloadException(
+                f"Failed to download SBI portfolio file: {e}"
+            )

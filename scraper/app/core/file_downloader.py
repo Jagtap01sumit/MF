@@ -1,18 +1,22 @@
 import os
 
 
-class FileDownloader:
+class DownloadManager:
+
+    DOWNLOAD_FOLDER = "app/downloads"
 
     def save_download(
         self,
-        download,
-        folder
+        download
     ):
 
-        os.makedirs(folder, exist_ok=True)
+        os.makedirs(
+            self.DOWNLOAD_FOLDER,
+            exist_ok=True
+        )
 
         file_path = os.path.join(
-            folder,
+            self.DOWNLOAD_FOLDER,
             download.suggested_filename
         )
 
