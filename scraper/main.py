@@ -9,27 +9,83 @@ from app.browser.browser_manager import (
 from app.downloaders.sbi_downloader import (
     SBIDownloader
 )
+from app.core.factory.downloader_factory import (
+    DownloaderFactory
+)
+
+from app.config.constant import AMC
+
+
 
 
 def main():
 
-    playwright, browser = (
-        PlaywrightFactory.launch_browser()
-    )
+    playwright = None
+    browser = None
 
-    manager = BrowserManager(browser)
+    try:
 
-    page = manager.create_page()
+        playwright, browser = (
+            PlaywrightFactory.launch_browser(
+                headless=False
+            )
+        )
 
-    downloader = SBIDownloader(page)
+        manager = BrowserManager(browser)
 
-    file_path = downloader.download_latest_portfolio()
+        # -------------------------
+        # ALL AMCs
+        # -------------------------
 
-    print(file_path)
+        amcs = [
+            AMC.SBI,
+            AMC.QUANT
+        ]
 
-    browser.close()
+        for amc in amcs:
 
-    playwright.stop()
+            try:
+
+                print(
+                    f"\n[INFO] Starting download for: {amc}"
+                )
+
+                page = manager.create_page()
+
+                downloader = (
+                    DownloaderFactory.get_downloader(
+                        amc,
+                        page
+                    )
+                )
+
+                file_path = (
+                    downloader.download_latest_portfolio()
+                )
+
+                print(
+                    f"[SUCCESS] {amc} Downloaded: {file_path}"
+                )
+
+            except Exception as e:
+
+                print(
+                    f"[ERROR] Failed for {amc}: {e}"
+                )
+
+    except Exception as e:
+
+        print(
+            f"[MAIN ERROR] {e}"
+        )
+
+    # finally:
+
+        # if browser:
+            # browser.close()
+
+        # if playwright:
+            # playwright.stop()
 
 
 if __name__ == "__main__":
