@@ -39,7 +39,7 @@ def main():
 
         amcs = [
             AMC.SBI,
-            AMC.QUANT
+            # AMC.QUANT
         ]
 
         for amc in amcs:

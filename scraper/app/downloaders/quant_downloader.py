@@ -3,7 +3,7 @@ from app.core.base_downloader import BaseDownloader
 from app.core.page_actions import PageActions
 
 from app.core.file_downloader import DownloadManager
-
+from app.extractors.quant_extractor import QUANTExcelExtractor
 from app.exceptions.exception import (
     FileNotFoundException,
     DownloadException
@@ -85,8 +85,9 @@ class QuantDownloader(
                 download_button.click()
 
             download = d.value
-
-            return self.save_download(download)
+            
+            filepath = self.save_download(download)
+            return filepath
 
         except Exception as e:
 
@@ -120,7 +121,18 @@ class QuantDownloader(
 
             self.actions.wait(2000)
 
-            return self.download_file()
+            filepath =  self.download_file()
+            extractor = QUANTExcelExtractor()
+
+            df = extractor.extract(filepath)
+            
+            print(df);
+            # normalizer = PortfolioNormalizer()
+
+            # normalized_df = normalizer.normalize(df)
+
+            # print(normalized_df.head())
+            return filepath;
 
         except Exception as e:
 

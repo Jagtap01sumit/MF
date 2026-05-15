@@ -1,9 +1,8 @@
 from app.core.base_downloader import BaseDownloader
 
 from app.core.page_actions import PageActions
-
+from app.extractors.sbi_extractor import SBIExtractor
 from app.core.file_downloader import DownloadManager
-
 from app.exceptions.exception import (
     FileNotFoundException,
     DownloadException
@@ -77,7 +76,15 @@ class SBIDownloader(
             print(
                 f"Downloaded: {file_path}"
             )
+            extractor = SBIExtractor()
 
+            df = extractor.extract(file_path)
+            print("sumit df"+df);
+            # normalizer = PortfolioNormalizer()
+
+            # normalized_df = normalizer.normalize(df)
+
+            # print(normalized_df.head())
             return file_path
 
         except FileNotFoundException as e:
