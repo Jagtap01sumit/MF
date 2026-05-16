@@ -5,7 +5,7 @@ from app.browser.playwright_factory import (
 from app.browser.browser_manager import (
     BrowserManager
 )
-
+from db.test_connections import connectionEstablistion
 from app.downloaders.sbi_downloader import (
     SBIDownloader
 )
@@ -37,9 +37,11 @@ def main():
         # ALL AMCs
         # -------------------------
 
+
+        connectionEstablistion()
         amcs = [
-            AMC.SBI,
-            # AMC.QUANT
+            # AMC.SBI,
+            AMC.QUANT
         ]
 
         for amc in amcs:
@@ -51,7 +53,7 @@ def main():
                 )
 
                 page = manager.create_page()
-
+     
                 downloader = (
                     DownloaderFactory.get_downloader(
                         amc,

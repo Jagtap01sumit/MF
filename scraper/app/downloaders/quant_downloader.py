@@ -1,14 +1,16 @@
 from app.core.base_downloader import BaseDownloader
 
 from app.core.page_actions import PageActions
-
+from datetime import datetime
 from app.core.file_downloader import DownloadManager
+from app.normalizers.quant_normalizer import PortfolioNormalizer
 from app.extractors.quant_extractor import QUANTExcelExtractor
 from app.exceptions.exception import (
     FileNotFoundException,
     DownloadException
 )
-
+from app.common.report_date_extractor import ReportDateExtractor
+from db.insertIntoDB.insert import insert_holdings
 from app.scrapers.quant.quant_config import QUANTConfig
 
 
@@ -127,11 +129,26 @@ class QuantDownloader(
             df = extractor.extract(filepath)
             
             print(df);
-            # normalizer = PortfolioNormalizer()
+            print("before normalizer")
+            normalizer = PortfolioNormalizer()
+      
+            normalized_df = normalizer.normalize(df)
+            date_extractor = ReportDateExtractor()
 
-            # normalized_df = normalizer.normalize(df)
+            report_month = (
+            date_extractor.extract_report_month(filepath)
+            )
 
-            # print(normalized_df.head())
+            print(report_month)
+            normalized_df["report_month"] = report_month
+            print("after normalizer")
+
+            print(normalized_df.head())
+            print("database connection")
+            insert_holdings(normalized_df);
+        
+
+           
             return filepath;
 
         except Exception as e:

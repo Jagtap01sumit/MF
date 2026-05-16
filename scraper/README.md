@@ -85,3 +85,6 @@ pip install playwright pandas openpyxl python-dotenv
 
 playwright install
 ```
+```
+pip install sqlalchemy psycopg2-binary python-dotenv
+```

@@ -7,10 +7,10 @@ from app.exceptions.exception import (
     FileNotFoundException,
     DownloadException
 )
-
+from db.insertIntoDB.insert import insert_holdings
 from app.scrapers.sbi.sbi_config import SBIConfig
-
-
+from app.common.report_date_extractor import ReportDateExtractor
+from app.normalizers.sbi_normalizer import PortfolioNormalizer
 class SBIDownloader(
     BaseDownloader,
     DownloadManager
@@ -76,15 +76,26 @@ class SBIDownloader(
             print(
                 f"Downloaded: {file_path}"
             )
-            extractor = SBIExtractor()
-
+            extractor  = SBIExtractor()
             df = extractor.extract(file_path)
-            print("sumit df"+df);
-            # normalizer = PortfolioNormalizer()
+            # print(df);
+            print("before col")
+            # print(df.sheet_names);
+            print("after col")
+            normalizer = PortfolioNormalizer()
+            normalized_df = normalizer.normalize(df)
+            date_extractor = ReportDateExtractor()
 
-            # normalized_df = normalizer.normalize(df)
+            report_month = (
+            date_extractor.extract_report_month(file_path)
+            )
+            normalized_df["report_month"] = report_month
+            print("after normalizer")
 
-            # print(normalized_df.head())
+            print(normalized_df.head())
+            print("database connection")
+            insert_holdings(normalized_df);
+        
             return file_path
 
         except FileNotFoundException as e:

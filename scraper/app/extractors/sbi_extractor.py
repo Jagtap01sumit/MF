@@ -4,33 +4,65 @@ import pandas as pd
 class SBIExtractor:
 
     POSSIBLE_HEADERS = [
+
         "Name of the Instrument",
+
         "ISIN",
+
         "Quantity",
+
         "Industry/Rating"
     ]
 
-    def safe_str(self, value):
+    def safe_str(
+        self,
+        value
+    ):
 
         if pd.isna(value):
+
             return ""
 
         return str(value).strip()
 
-    def safe_float(self, value):
+    def safe_float(
+        self,
+        value
+    ):
 
         if pd.isna(value):
+
             return 0.0
 
         try:
+
+            value = (
+
+                str(value)
+
+                .replace(",", "")
+
+                .strip()
+            )
+
+            if value == "":
+
+                return 0.0
+
             return float(value)
 
         except:
+
             return 0.0
 
-    def extract(self, file_path):
+    def extract(
+        self,
+        file_path
+    ):
 
-        excel = pd.ExcelFile(file_path)
+        excel = pd.ExcelFile(
+            file_path
+        )
 
         all_data = []
 
@@ -41,7 +73,7 @@ class SBIExtractor:
         for sheet_name in excel.sheet_names:
 
             print(
-                f"Processing Sheet: {sheet_name}"
+                f"\nProcessing Sheet: {sheet_name}"
             )
 
             try:
@@ -58,13 +90,24 @@ class SBIExtractor:
                 )
 
                 df = pd.read_excel(
+
                     file_path,
+
                     sheet_name=sheet_name,
+
                     header=header_row
                 )
 
+                print("\nDATAFRAME TYPE:")
+                print(type(df))
+
+                print("\nDATAFRAME HEAD:")
+                print(df.head())
+
                 rows = self.process_sheet(
+
                     df,
+
                     sheet_name
                 )
 
@@ -73,10 +116,25 @@ class SBIExtractor:
             except Exception as e:
 
                 print(
-                    f"Skipping Sheet {sheet_name}: {e}"
+                    f"[WARNING] Skipping Sheet {sheet_name}: {e}"
                 )
 
-        final_df = pd.DataFrame(all_data)
+        final_df = pd.DataFrame(
+            all_data
+        )
+
+        if not final_df.empty:
+
+            final_df = final_df.astype({
+
+                "scheme_code": "string",
+
+                "isin": "string",
+
+                "stock_name": "string",
+
+                "industry": "string"
+            })
 
         print(
             "\n[DATA EXTRACTED SUCCESSFULLY]"
@@ -95,26 +153,59 @@ class SBIExtractor:
     ):
 
         preview_df = pd.read_excel(
+
             file_path,
+
             sheet_name=sheet_name,
+
             header=None,
+
             nrows=20
         )
 
-        for row_index in range(len(preview_df)):
+        for row_index in range(
+
+            len(preview_df)
+        ):
 
             row_values = (
+
                 preview_df.iloc[row_index]
+
                 .astype(str)
+
                 .str.strip()
+
                 .tolist()
             )
 
-            matched_headers = sum(
+            matched_headers = 0
 
-                header in row_values
+            for header in self.POSSIBLE_HEADERS:
 
-                for header in self.POSSIBLE_HEADERS
+                for value in row_values:
+
+                    if (
+
+                        header.lower()
+
+                        in str(value).lower()
+                    ):
+
+                        matched_headers += 1
+
+                        break
+
+            print(
+                f"\nROW {row_index}:"
+            )
+
+            print(
+                row_values
+            )
+
+            print(
+                f"Matched Headers: {matched_headers}"
             )
 
             if matched_headers >= 2:
@@ -134,31 +225,46 @@ class SBIExtractor:
         extracted = []
 
         ignore_keywords = [
+
             "Sub Total",
+
             "Total",
+
             "Grand Total",
+
             "TREPS",
+
             "Mutual Fund",
+
             "Net Receivable",
+
             "Reverse Repo"
         ]
 
-        # Normalize column names
-        df.columns = (
-            df.columns
-            .astype(str)
-            .str.strip()
-        )
+        print("\nPROCESS SHEET CALLED")
 
-        print(
-            f"\nColumns in {sheet_name}:"
-        )
+        print("\nDF TYPE:")
+        print(type(df))
 
-        print(
-            df.columns.tolist()
-        )
+        print("\nDF COLUMNS:")
+        print(df.columns.tolist())
 
-        # Detect columns dynamically
+        # Normalize columns
+        df.columns = [
+
+            str(col)
+
+            .strip()
+
+            .lower()
+
+            for col in df.columns
+        ]
+
+        print("\nNORMALIZED COLUMNS:")
+        print(df.columns.tolist())
+
+        # Dynamic column detection
         isin_column = None
         stock_column = None
         industry_column = None
@@ -167,13 +273,23 @@ class SBIExtractor:
 
         for col in df.columns:
 
-            col_upper = col.upper()
+            col_upper = (
+
+                str(col)
+
+                .upper()
+
+                .strip()
+            )
 
             if "ISIN" in col_upper:
 
                 isin_column = col
 
-            elif "NAME OF THE INSTRUMENT" in col_upper:
+            elif (
+                "NAME OF THE INSTRUMENT"
+                in col_upper
+            ):
 
                 stock_column = col
 
@@ -189,7 +305,7 @@ class SBIExtractor:
 
                 market_value_column = col
 
-        print("\nDetected Columns:")
+        print("\nDETECTED COLUMNS:")
 
         print(
             f"ISIN: {isin_column}"
@@ -214,6 +330,7 @@ class SBIExtractor:
         for _, row in df.iterrows():
 
             isin = self.safe_str(
+
                 row.get(
                     isin_column,
                     ""
@@ -221,6 +338,7 @@ class SBIExtractor:
             )
 
             stock_name = self.safe_str(
+
                 row.get(
                     stock_column,
                     ""
@@ -232,17 +350,22 @@ class SBIExtractor:
                 stock_name == ""
                 or stock_name.lower() == "nan"
             ):
+
                 continue
 
-            # Skip subtotal rows
+            # Skip unwanted rows
             if any(
+
                 keyword.lower()
+
                 in stock_name.lower()
+
                 for keyword in ignore_keywords
             ):
+
                 continue
 
-            # Accept valid rows
+            # Accept only valid ISIN rows
             if (
                 isin
                 and isin.lower() != "nan"
@@ -250,13 +373,16 @@ class SBIExtractor:
 
                 extracted.append({
 
-                    "scheme_code": sheet_name,
+                    "scheme_code": str(
+                        sheet_name
+                    ).strip(),
 
                     "isin": isin,
 
                     "stock_name": stock_name,
 
                     "industry": self.safe_str(
+
                         row.get(
                             industry_column,
                             ""
@@ -264,6 +390,7 @@ class SBIExtractor:
                     ),
 
                     "quantity": self.safe_float(
+
                         row.get(
                             quantity_column,
                             0
@@ -271,12 +398,16 @@ class SBIExtractor:
                     ),
 
                     "market_value": self.safe_float(
+
                         row.get(
                             market_value_column,
                             0
                         )
                     )
-
                 })
+
+        print(
+            f"\nExtracted Rows: {len(extracted)}"
+        )
 
         return extracted
