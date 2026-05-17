@@ -8,7 +8,6 @@ class ReportDateExtractor:
 
         try:
 
-            # Read first few rows only
             temp_df = pd.read_excel(filepath, header=None, nrows=15)
 
             # Convert all cells to text

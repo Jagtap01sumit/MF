@@ -5,6 +5,7 @@ from app.browser.browser_manager import BrowserManager
 # from database.test_connections import DBConnection
 from app.downloaders.sbi_downloader import SBIDownloader
 from app.core.factory.downloader_factory import DownloaderFactory
+from database.DB.schemas.schemas import TableCreation
 
 from app.config.constant import AMC
 
@@ -21,6 +22,7 @@ def main():
         manager = BrowserManager(browser)
 
         DatabaseConnection.check_connection()
+        TableCreation.create_tables()
         amcs = [
             # AMC.SBI,
             AMC.QUANT

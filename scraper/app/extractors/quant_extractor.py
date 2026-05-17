@@ -1,5 +1,8 @@
 import pandas as pd
 
+from app.core.common.scheme_name_extractor import ExtractSchemeName
+from app.core.common.amc_name_extractor import extract_amc_name
+
 
 class QUANTExcelExtractor:
 
@@ -26,6 +29,10 @@ class QUANTExcelExtractor:
         extracted = []
 
         ignore_keywords = ["Sub Total", "Total", "DERIVATIVES", "Unlisted"]
+        scheme_name = ExtractSchemeName.extract_scheme_name(df)
+        print(scheme_name + "scheme name")
+        amc_name = extract_amc_name(df)
+        print(amc_name + "amc name")
 
         for _, row in df.iterrows():
 
@@ -56,17 +63,20 @@ class QUANTExcelExtractor:
             ):
                 continue
 
+            # normalized_df["amc_name"] = amc_name
             # Actual stock rows
             if isin.startswith("INE"):
 
                 extracted.append(
                     {
                         "scheme_code": sheet_name,
+                        "scheme_name": scheme_name,
                         "isin": isin,
                         "stock_name": instrument_name,
                         "industry": values[4],
                         "quantity": values[5],
                         "market_value": values[6],
+                        "amc_name": amc_name,
                     }
                 )
 

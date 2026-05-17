@@ -1,4 +1,7 @@
 class PortfolioNormalizer:
+    def __init__(self, scheme_name=None, amc_name=None):
+        self.scheme_name = scheme_name
+        self.amc_name = amc_name
 
     def normalize(self, df):
 
@@ -20,6 +23,7 @@ class PortfolioNormalizer:
         for _, row in df.iterrows():
 
             stock_name = str(row.get("stock_name", "")).strip()
+            scheme_name = str(row.get("scheme_name", "")).strip()
 
             # Skip empty rows
             if not stock_name:
@@ -33,12 +37,14 @@ class PortfolioNormalizer:
 
             normalized_row = {
                 "scheme_code": str(row.get("scheme_code", "")).strip(),
+                "scheme_name": scheme_name,
                 "isin": str(row.get("isin", "")).strip(),
                 "stock_name": stock_name,
                 "industry": str(row.get("industry", "")).strip(),
                 "quantity": self.safe_int(row.get("quantity", 0)),
                 "market_value": self.safe_float(row.get("market_value", 0)),
                 "report_month": self.safe_float(row.get("report_month", 0)),
+                "amc_name": str(row.get("amc_name", "")).strip(),
             }
 
             normalized_rows.append(normalized_row)
