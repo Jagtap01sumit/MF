@@ -11,20 +11,15 @@ class PortfolioNormalizer:
             "Total",
             "Grand Total",
             "DERIVATIVES",
-            "Unlisted"
+            "Unlisted",
         ]
 
         # Standardize column names
-        df.columns = [
-            str(col).strip().lower()
-            for col in df.columns
-        ]
+        df.columns = [str(col).strip().lower() for col in df.columns]
 
         for _, row in df.iterrows():
 
-            stock_name = str(
-                row.get("stock_name", "")
-            ).strip()
+            stock_name = str(row.get("stock_name", "")).strip()
 
             # Skip empty rows
             if not stock_name:
@@ -32,57 +27,29 @@ class PortfolioNormalizer:
 
             # Skip unwanted rows
             if any(
-                keyword.lower() in stock_name.lower()
-                for keyword in ignore_keywords
+                keyword.lower() in stock_name.lower() for keyword in ignore_keywords
             ):
                 continue
 
             normalized_row = {
-                "scheme_code": str(
-                    row.get("scheme_code", "")
-                ).strip(),
-
-                "isin": str(
-                    row.get("isin", "")
-                ).strip(),
-
+                "scheme_code": str(row.get("scheme_code", "")).strip(),
+                "isin": str(row.get("isin", "")).strip(),
                 "stock_name": stock_name,
-
-                "industry": str(
-                    row.get("industry", "")
-                ).strip(),
-
-                "quantity": self.safe_int(
-                    row.get("quantity", 0)
-                ),
-
-                "market_value": self.safe_float(
-                    row.get("market_value", 0)
-                ),
-                "report_month": self.safe_float(
-                    row.get("report_month",0)
-                )
+                "industry": str(row.get("industry", "")).strip(),
+                "quantity": self.safe_int(row.get("quantity", 0)),
+                "market_value": self.safe_float(row.get("market_value", 0)),
+                "report_month": self.safe_float(row.get("report_month", 0)),
             }
 
-            normalized_rows.append(
-                normalized_row
-            )
+            normalized_rows.append(normalized_row)
 
-        normalized_df = pd.DataFrame(
-            normalized_rows
-        )
+        normalized_df = pd.DataFrame(normalized_rows)
 
         # Remove duplicates
-        normalized_df.drop_duplicates(
-            subset=["scheme_code", "isin"],
-            inplace=True
-        )
+        normalized_df.drop_duplicates(subset=["scheme_code", "isin"], inplace=True)
 
         # Reset index
-        normalized_df.reset_index(
-            drop=True,
-            inplace=True
-        )
+        normalized_df.reset_index(drop=True, inplace=True)
 
         return normalized_df
 

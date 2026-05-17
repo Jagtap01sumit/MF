@@ -1,4 +1,5 @@
 ### Folder structure
+
 ```
 scraper/
 │
@@ -80,11 +81,77 @@ scraper/
 ```
 
 ### STEP 1 — Install Dependencies
+
 ```
 pip install playwright pandas openpyxl python-dotenv
 
 playwright install
 ```
+
 ```
 pip install sqlalchemy psycopg2-binary python-dotenv
+```
+
+# Mutual Fund Analytics Database Design
+
+---
+
+# 📊 Tables & Relations Diagram
+
+```text
+┌────────────────────┐
+│       amcs         │
+├────────────────────┤
+│ id (PK)            │
+│ amc_name           │
+│ created_at         │
+└─────────┬──────────┘
+          │
+          │ 1 → Many
+          ▼
+┌────────────────────┐
+│      schemes       │
+├────────────────────┤
+│ id (PK)            │
+│ amc_id (FK)        │
+│ scheme_code        │
+│ scheme_name        │
+│ created_at         │
+└─────────┬──────────┘
+          │
+          │ 1 → Many
+          ▼
+┌────────────────────────────────────┐
+│             portfolio              │
+├────────────────────────────────────┤
+│ id (PK)                            │
+│ scheme_id (FK)                     │
+│ stock_id (FK)                      │
+│ report_month                       │
+│ quantity                           │
+│ market_value                       │
+│ created_at                         │
+└─────────┬──────────────────────────┘
+          │
+          │ Many → 1
+          ▼
+┌────────────────────┐
+│       stocks       │
+├────────────────────┤
+│ id (PK)            │
+│ isin               │
+│ stock_name         │
+│ industry_id (FK)   │
+│ created_at         │
+└─────────┬──────────┘
+          │
+          │ Many → 1
+          ▼
+┌────────────────────┐
+│     industries     │
+├────────────────────┤
+│ id (PK)            │
+│ industry_name      │
+│ created_at         │
+└────────────────────┘
 ```

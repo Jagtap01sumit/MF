@@ -2,14 +2,14 @@ from app.core.base_downloader import BaseDownloader
 
 from app.core.page_actions import PageActions
 from app.extractors.sbi_extractor import SBIExtractor
-from app.core.file_downloader import DownloadManager
+from app.core.common.file_downloader import DownloadManager
 from app.exceptions.exception import (
     FileNotFoundException,
     DownloadException
 )
-from db.insertIntoDB.insert import insert_holdings
+from database.DB.insert import insert_holdings
 from app.scrapers.sbi.sbi_config import SBIConfig
-from app.common.report_date_extractor import ReportDateExtractor
+from app.core.common.report_date_extractor import ReportDateExtractor
 from app.normalizers.sbi_normalizer import PortfolioNormalizer
 class SBIDownloader(
     BaseDownloader,

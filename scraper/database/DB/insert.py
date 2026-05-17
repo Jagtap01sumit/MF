@@ -1,4 +1,4 @@
-from db.connections import engine
+from database.connections import engine
 
 def insert_holdings(df):
     try:

@@ -2,15 +2,15 @@ from app.core.base_downloader import BaseDownloader
 
 from app.core.page_actions import PageActions
 from datetime import datetime
-from app.core.file_downloader import DownloadManager
+from app.core.common.file_downloader import DownloadManager
 from app.normalizers.quant_normalizer import PortfolioNormalizer
 from app.extractors.quant_extractor import QUANTExcelExtractor
 from app.exceptions.exception import (
     FileNotFoundException,
     DownloadException
 )
-from app.common.report_date_extractor import ReportDateExtractor
-from db.insertIntoDB.insert import insert_holdings
+from app.core.common.report_date_extractor import ReportDateExtractor
+from database.DB.insert import insert_holdings
 from app.scrapers.quant.quant_config import QUANTConfig
 
 

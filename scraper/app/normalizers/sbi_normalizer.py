@@ -4,59 +4,31 @@ import pandas as pd
 class PortfolioNormalizer:
 
     IGNORE_KEYWORDS = [
-
         "Sub Total",
-
         "Total",
-
         "Grand Total",
-
         "DERIVATIVES",
-
         "Unlisted",
-
         "TREPS",
-
         "Mutual Fund",
-
         "Net Receivable",
-
-        "Reverse Repo"
+        "Reverse Repo",
     ]
 
-    def normalize(
-        self,
-        df,
-        report_month=None
-    ):
+    def normalize(self, df, report_month=None):
 
         normalized_rows = []
 
         # Standardize column names
-        df.columns = [
-
-            str(col)
-            .strip()
-            .lower()
-
-            for col in df.columns
-        ]
+        df.columns = [str(col).strip().lower() for col in df.columns]
 
         print("\n[NORMALIZATION STARTED]")
 
-        print(
-            f"Total Raw Rows: {len(df)}"
-        )
+        print(f"Total Raw Rows: {len(df)}")
 
         for _, row in df.iterrows():
 
-            stock_name = self.safe_str(
-
-                row.get(
-                    "stock_name",
-                    ""
-                )
-            )
+            stock_name = self.safe_str(row.get("stock_name", ""))
 
             # Skip empty rows
             if not stock_name:
@@ -65,61 +37,20 @@ class PortfolioNormalizer:
 
             # Skip unwanted rows
             if any(
-
-                keyword.lower()
-
-                in stock_name.lower()
-
+                keyword.lower() in stock_name.lower()
                 for keyword in self.IGNORE_KEYWORDS
             ):
 
                 continue
 
             normalized_row = {
-
-                "scheme_code": self.safe_str(
-
-                    row.get(
-                        "scheme_code",
-                        ""
-                    )
-                ),
-
-                "isin": self.safe_str(
-
-                    row.get(
-                        "isin",
-                        ""
-                    )
-                ),
-
+                "scheme_code": self.safe_str(row.get("scheme_code", "")),
+                "isin": self.safe_str(row.get("isin", "")),
                 "stock_name": stock_name,
-
-                "industry": self.safe_str(
-
-                    row.get(
-                        "industry",
-                        ""
-                    )
-                ),
-
-                "quantity": self.safe_int(
-
-                    row.get(
-                        "quantity",
-                        0
-                    )
-                ),
-
-                "market_value": self.safe_float(
-
-                    row.get(
-                        "market_value",
-                        0
-                    )
-                ),
-
-                "report_month": report_month
+                "industry": self.safe_str(row.get("industry", "")),
+                "quantity": self.safe_int(row.get("quantity", 0)),
+                "market_value": self.safe_float(row.get("market_value", 0)),
+                "report_month": report_month,
             }
 
             # Skip rows without ISIN
@@ -127,47 +58,23 @@ class PortfolioNormalizer:
 
                 continue
 
-            normalized_rows.append(
-                normalized_row
-            )
+            normalized_rows.append(normalized_row)
 
-        normalized_df = pd.DataFrame(
-            normalized_rows
-        )
+        normalized_df = pd.DataFrame(normalized_rows)
 
         # Remove duplicates
-        normalized_df.drop_duplicates(
-
-            subset=[
-                "scheme_code",
-                "isin"
-            ],
-
-            inplace=True
-        )
+        normalized_df.drop_duplicates(subset=["scheme_code", "isin"], inplace=True)
 
         # Reset clean index
-        normalized_df.reset_index(
+        normalized_df.reset_index(drop=True, inplace=True)
 
-            drop=True,
+        print(f"Normalized Rows: {len(normalized_df)}")
 
-            inplace=True
-        )
-
-        print(
-            f"Normalized Rows: {len(normalized_df)}"
-        )
-
-        print(
-            "\n[NORMALIZATION COMPLETED]"
-        )
+        print("\n[NORMALIZATION COMPLETED]")
 
         return normalized_df
 
-    def safe_str(
-        self,
-        value
-    ):
+    def safe_str(self, value):
 
         if pd.isna(value):
 
@@ -175,26 +82,13 @@ class PortfolioNormalizer:
 
         return str(value).strip()
 
-    def safe_int(
-        self,
-        value
-    ):
+    def safe_int(self, value):
 
         try:
 
-            value = (
+            value = str(value).replace(",", "").strip()
 
-                str(value)
-
-                .replace(",", "")
-
-                .strip()
-            )
-
-            if (
-                value == ""
-                or value.lower() == "nan"
-            ):
+            if value == "" or value.lower() == "nan":
 
                 return 0
 
@@ -204,26 +98,13 @@ class PortfolioNormalizer:
 
             return 0
 
-    def safe_float(
-        self,
-        value
-    ):
+    def safe_float(self, value):
 
         try:
 
-            value = (
+            value = str(value).replace(",", "").strip()
 
-                str(value)
-
-                .replace(",", "")
-
-                .strip()
-            )
-
-            if (
-                value == ""
-                or value.lower() == "nan"
-            ):
+            if value == "" or value.lower() == "nan":
 
                 return 0.0
 
