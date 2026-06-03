@@ -1,62 +1,43 @@
 class ScraperException(Exception):
 
-    def __init__(
-        self,
-        message="Scraper exception occurred"
-    ):
+    def __init__(self, message="Scraper exception occurred"):
 
         self.message = message
 
         super().__init__(self.message)
 
 
-class DownloadException(
-    ScraperException
-):
+class DownloadException(ScraperException):
     pass
 
 
-class FileNotFoundException(
-    DownloadException
-):
+class FileNotFoundException(DownloadException):
     pass
 
 
-class DownloadTimeoutException(
-    DownloadException
-):
-    pass
-
-class BrowserException(
-    ScraperException
-):
+class DownloadTimeoutException(DownloadException):
     pass
 
 
-class BrowserLaunchException(
-    BrowserException
-):
-    pass
-
-class ParserException(
-    ScraperException
-):
+class BrowserException(ScraperException):
     pass
 
 
-class InvalidExcelFormatException(
-    ParserException
-):
+class BrowserLaunchException(BrowserException):
     pass
 
 
-class SheetNotFoundException(
-    ParserException
-):
+class ParserException(ScraperException):
     pass
 
 
-class ColumnNotFoundException(
-    ParserException
-):
+class InvalidExcelFormatException(ParserException):
+    pass
+
+
+class SheetNotFoundException(ParserException):
+    pass
+
+
+class ColumnNotFoundException(ParserException):
     pass

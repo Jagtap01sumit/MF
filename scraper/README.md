@@ -1,4 +1,5 @@
 ### Folder structure
+
 ```
 scraper/
 │
@@ -80,13 +81,17 @@ scraper/
 ```
 
 ### STEP 1 — Install Dependencies
+
 ```
 pip install playwright pandas openpyxl python-dotenv
 
 playwright install
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 ```
 =======
+=======
+>>>>>>> e7cff4bbd380276c3eaf1f4f5b01ed1a426187ef
 ```
 
 ```
@@ -156,6 +161,7 @@ pip install sqlalchemy psycopg2-binary python-dotenv
 │ created_at         │
 └────────────────────┘
 ```
+<<<<<<< HEAD
 
 # Extractor function flow
 
@@ -683,3 +689,5 @@ class SBIExtractor:
     ```
 ````
 >>>>>>> Stashed changes
+=======
+>>>>>>> e7cff4bbd380276c3eaf1f4f5b01ed1a426187ef
