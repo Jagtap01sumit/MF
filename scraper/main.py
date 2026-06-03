@@ -1,21 +1,17 @@
-from app.browser.playwright_factory import (
-    PlaywrightFactory
-)
+from app.browser.playwright_factory import PlaywrightFactory
+from database.test_connections import DatabaseConnection
+from app.browser.browser_manager import BrowserManager
+from app.browser.browser_manager import BrowserManager
+from app.downloaders.sbi_downloader import SBIDownloader
+from app.core.factory.downloader_factory import DownloaderFactory
+from app.downloaders.sbi_downloader import SBIDownloader
+from app.core.factory.downloader_factory import DownloaderFactory
+from database.DB.schemas.schemas import TableCreation
+from app.downloaders.sbi_downloader import SBIDownloader
+from app.core.factory.downloader_factory import DownloaderFactory
 
-from app.browser.browser_manager import (
-    BrowserManager
-)
-
-from app.downloaders.sbi_downloader import (
-    SBIDownloader
-)
-from app.core.factory.downloader_factory import (
-    DownloaderFactory
-)
 
 from app.config.constant import AMC
-
-
 
 
 def main():
@@ -25,11 +21,7 @@ def main():
 
     try:
 
-        playwright, browser = (
-            PlaywrightFactory.launch_browser(
-                headless=False
-            )
-        )
+        playwright, browser = PlaywrightFactory.launch_browser(headless=False)
 
         manager = BrowserManager(browser)
 
@@ -37,55 +29,37 @@ def main():
         # ALL AMCs
         # -------------------------
 
-        amcs = [
-            AMC.SBI,
-            AMC.QUANT
-        ]
+        DatabaseConnection.check_connection()
+        TableCreation.create_tables()
+        amcs = [AMC.QUANT, AMC.SBI]
 
         for amc in amcs:
 
             try:
-
-                print(
-                    f"\n[INFO] Starting download for: {amc}"
-                )
-
+                print(f"\n[INFO] Starting download for: {amc}")
                 page = manager.create_page()
 
-                downloader = (
-                    DownloaderFactory.get_downloader(
-                        amc,
-                        page
-                    )
-                )
+                downloader = DownloaderFactory.get_downloader(amc, page)
 
-                file_path = (
-                    downloader.download_latest_portfolio()
-                )
+                file_path = downloader.download_latest_portfolio()
 
-                print(
-                    f"[SUCCESS] {amc} Downloaded: {file_path}"
-                )
+                print(f"[SUCCESS] {amc} Downloaded: {file_path}")
 
             except Exception as e:
 
-                print(
-                    f"[ERROR] Failed for {amc}: {e}"
-                )
+                print(f"[ERROR] Failed for {amc}: {e}")
 
     except Exception as e:
 
-        print(
-            f"[MAIN ERROR] {e}"
-        )
+        print(f"[MAIN ERROR] {e}")
 
     # finally:
 
-        # if browser:
-            # browser.close()
+    # if browser:
+    # browser.close()
 
-        # if playwright:
-            # playwright.stop()
+    # if playwright:
+    # playwright.stop()
 
 
 if __name__ == "__main__":
