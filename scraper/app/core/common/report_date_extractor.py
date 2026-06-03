@@ -56,8 +56,6 @@ import re
 import os
 
 import pandas as pd
-import re
-import os
 
 
 class ReportDateExtractor:
