@@ -2,6 +2,7 @@ from app.browser.playwright_factory import (
     PlaywrightFactory
 )
 
+
 from app.browser.browser_manager import (
     BrowserManager
 )
@@ -12,6 +13,11 @@ from app.downloaders.sbi_downloader import (
 from app.core.factory.downloader_factory import (
     DownloaderFactory
 )
+
+
+from app.downloaders.sbi_downloader import SBIDownloader
+from app.core.factory.downloader_factory import DownloaderFactory
+
 
 from app.config.constant import AMC
 
@@ -33,6 +39,7 @@ def main():
 
         manager = BrowserManager(browser)
 
+
         # -------------------------
         # ALL AMCs
         # -------------------------
@@ -41,6 +48,11 @@ def main():
             AMC.SBI,
             AMC.QUANT
         ]
+
+        DatabaseConnection.check_connection()
+        TableCreation.create_tables()
+        amcs = [AMC.QUANT, AMC.SBI]
+
 
         for amc in amcs:
 
