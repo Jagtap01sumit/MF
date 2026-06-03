@@ -7,7 +7,11 @@ from app.exceptions.exception import FileNotFoundException, DownloadException
 from database.DB.insert import insert_holdings
 from app.scrapers.sbi.sbi_config import SBIConfig
 from app.core.common.report_date_extractor import ReportDateExtractor
-from app.normalizers.sbi_normalizer import PortfolioNormalizer
+from database.DB.procedures.portfolio_procedures import PortfolioProcessor
+
+# from app.core.common.report_date_extractor import ReportDateExtractor
+# from app.normalizers.sbi_normalizer import PortfolioNormalizer
+from app.normalizers.quant_normalizer import PortfolioNormalizer
 
 
 class SBIDownloader(BaseDownloader, DownloadManager):
@@ -59,7 +63,7 @@ class SBIDownloader(BaseDownloader, DownloadManager):
             print(f"Downloaded: {file_path}")
             extractor = SBIExtractor()
             df = extractor.extract(file_path)
-            # print(df);
+            print(df)
             print("before col")
             # print(df.sheet_names);
             print("after col")
@@ -68,12 +72,19 @@ class SBIDownloader(BaseDownloader, DownloadManager):
             date_extractor = ReportDateExtractor()
 
             report_month = date_extractor.extract_report_month(file_path)
+
+            print(report_month)
             normalized_df["report_month"] = report_month
             print("after normalizer")
 
             print(normalized_df.head())
-            print("database connection")
-            insert_holdings(normalized_df)
+
+            print(normalized_df)
+            date_extractor = ReportDateExtractor()
+
+            report_month = date_extractor.extract_report_month(file_path)
+            processor = PortfolioProcessor()
+            processor.process(normalized_df)
 
             return file_path
 

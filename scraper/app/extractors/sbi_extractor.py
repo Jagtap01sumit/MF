@@ -1,5 +1,8 @@
 import pandas as pd
 
+from app.core.common.scheme_name_extractor import ExtractSchemeName
+from app.core.common.amc_name_extractor import extract_amc_name
+
 
 from app.core.common.scheme_name_extractor import ExtractSchemeName
 from app.core.common.amc_name_extractor import extract_amc_name
@@ -29,35 +32,24 @@ class SBIExtractor:
 
 class SBIExtractor:
 
-    POSSIBLE_HEADERS = ["Name of the Instrument", "ISIN", "Quantity", "Industry/Rating"]
+    POSSIBLE_HEADERS = [
+        "Name of the Instrument",
+        "ISIN",
+        "Quantity",
+        "Industry/Rating",
+    ]
 
-    def safe_str(self, value):
-
-        if pd.isna(value):
-
-            return ""
-
-        return str(value).strip()
-
-    def safe_float(self, value):
-
-        if pd.isna(value):
-
-            return 0.0
-
-        try:
-
-            value = str(value).replace(",", "").strip()
-
-            if value == "":
-
-                return 0.0
-
-            return float(value)
-
-        except:
-
-            return 0.0
+    IGNORE_KEYWORDS = [
+        "Sub Total",
+        "Total",
+        "DERIVATIVES",
+        "Unlisted",
+        "Grand Total",
+        "TREPS",
+        "Mutual Fund",
+        "Net Receivable",
+        "Reverse Repo",
+    ]
 
     def extract(self, file_path):
 
@@ -86,84 +78,19 @@ class SBIExtractor:
 
         print(f"Sheets Found: {excel.sheet_names}")
 
+        print(f"length Sheet: {len(excel.sheet_names)}")
         for sheet_name in excel.sheet_names:
+            # for sheet_name in sheets_to_process:
 
-            print(f"\nProcessing Sheet: {sheet_name}")
+            print(f"Processing Sheet: {sheet_name}")
 
-            try:
+            df = pd.read_excel(file_path, sheet_name=sheet_name, header=None)
 
-                header_row = self.detect_header_row(file_path, sheet_name)
+            normalized_rows = self.process_sheet(df, sheet_name)
 
-                print(f"Header Found at Row: {header_row}")
+            all_data.extend(normalized_rows)
 
-                df = pd.read_excel(file_path, sheet_name=sheet_name, header=header_row)
-
-                print("\nDATAFRAME TYPE:")
-                print(type(df))
-
-                print("\nDATAFRAME HEAD:")
-                print(df.head())
-
-                rows = self.process_sheet(df, sheet_name)
-
-                all_data.extend(rows)
-
-            except Exception as e:
-
-                print(f"[WARNING] Skipping Sheet {sheet_name}: {e}")
-
-        final_df = pd.DataFrame(all_data)
-
-        if not final_df.empty:
-
-            final_df = final_df.astype(
-                {
-                    "scheme_code": "string",
-                    "isin": "string",
-                    "stock_name": "string",
-                    "industry": "string",
-                }
-            )
-
-        print("\n[DATA EXTRACTED SUCCESSFULLY]")
-
-        print(final_df.head())
-
-        return final_df
-
-    def detect_header_row(self, file_path, sheet_name):
-
-        preview_df = pd.read_excel(
-            file_path, sheet_name=sheet_name, header=None, nrows=20
-        )
-
-        for row_index in range(len(preview_df)):
-
-            row_values = preview_df.iloc[row_index].astype(str).str.strip().tolist()
-
-            matched_headers = 0
-
-            for header in self.POSSIBLE_HEADERS:
-
-                for value in row_values:
-
-                    if header.lower() in str(value).lower():
-
-                        matched_headers += 1
-
-                        break
-
-            print(f"\nROW {row_index}:")
-
-            print(row_values)
-
-            print(f"Matched Headers: {matched_headers}")
-
-            if matched_headers >= 2:
-
-                return row_index
-
-        raise Exception("Header row not found")
+        return pd.DataFrame(all_data)
 
     def process_sheet(self, df, sheet_name):
 
@@ -177,6 +104,7 @@ class SBIExtractor:
         if len(df.columns) < 4:
             print(f"Skipping sheet {sheet_name} - less than 4 columns")
             return extracted
+
         for _, row in df.iterrows():
 
             values = []
@@ -295,38 +223,50 @@ class SBIExtractor:
 
         for _, row in df.iterrows():
 
-            isin = self.safe_str(row.get(isin_column, ""))
+            values = []
 
-            stock_name = self.safe_str(row.get(stock_column, ""))
+            for value in row.tolist():
 
-            # Skip empty rows
-            if stock_name == "" or stock_name.lower() == "nan":
+                if pd.isna(value):
 
+                    values.append("")
+
+                else:
+
+                    values.append(str(value).strip())
+
+            # Ignore completely empty rows
+            if all(v == "" for v in values):
                 continue
 
-            # Skip unwanted rows
+            isin = values[3]
+            print(f"values Sheet: {values}")
+            print(f"ISIN: {isin}")
+            instrument_name = values[2]
+
+            # Ignore subtotal / section rows
             if any(
-                keyword.lower() in stock_name.lower() for keyword in ignore_keywords
+                keyword.lower() in instrument_name.lower()
+                for keyword in ignore_keywords
             ):
-
                 continue
 
-            # Accept only valid ISIN rows
-            if isin and isin.lower() != "nan":
+            # normalized_df["amc_name"] = amc_name
+            # Actual stock rows
+            if isin.startswith("INE"):
 
                 extracted.append(
                     {
-                        "scheme_code": str(sheet_name).strip(),
+                        "scheme_code": sheet_name,
+                        "scheme_name": scheme_name,
                         "isin": isin,
-                        "stock_name": stock_name,
-                        "industry": self.safe_str(row.get(industry_column, "")),
-                        "quantity": self.safe_float(row.get(quantity_column, 0)),
-                        "market_value": self.safe_float(
-                            row.get(market_value_column, 0)
-                        ),
+                        "stock_name": instrument_name,
+                        "industry": values[4],
+                        "quantity": values[5],
+                        "market_value": values[6],
+                        "amc_name": amc_name,
                     }
                 )
-
-        print(f"\nExtracted Rows: {len(extracted)}")
-
+        print("--------------------------")
+        print(extracted)
         return extracted

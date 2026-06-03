@@ -50,12 +50,14 @@
 
 #             return None
 
+
 import pandas as pd
 import re
 import os
 
 import pandas as pd
 import re
+import os
 
 
 class ReportDateExtractor:
@@ -78,18 +80,12 @@ class ReportDateExtractor:
             # Convert all cells to text
             rows_text = " ".join(temp_df.fillna("").astype(str).values.flatten())
 
-            # Clean extra spaces
             rows_text = " ".join(rows_text.split())
 
-            # Regex patterns
             patterns = [
-                # 30-Apr-2026
                 r"\d{1,2}[-/][A-Za-z]{3}[-/]\d{4}",
-                # 30 April 2026
                 r"\d{1,2}\s+[A-Za-z]+\s+\d{4}",
-                # April 30 2026
                 r"[A-Za-z]+\s+\d{1,2}\s+\d{4}",
-                # Apr 2026
                 r"[A-Za-z]{3,9}\s+\d{4}",
             ]
 
@@ -104,7 +100,6 @@ class ReportDateExtractor:
                     parsed_date = pd.to_datetime(extracted_date, errors="coerce")
 
                     if pd.notnull(parsed_date):
-
                         return parsed_date.strftime("%Y-%m-01")
 
             # ==================================================

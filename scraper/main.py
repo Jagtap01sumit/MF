@@ -1,18 +1,12 @@
 from app.browser.playwright_factory import PlaywrightFactory
 from database.test_connections import DatabaseConnection
 from app.browser.browser_manager import BrowserManager
-
-
 from app.browser.browser_manager import BrowserManager
-
 from app.downloaders.sbi_downloader import SBIDownloader
 from app.core.factory.downloader_factory import DownloaderFactory
-
-# from database.test_connections import DBConnection
 from app.downloaders.sbi_downloader import SBIDownloader
 from app.core.factory.downloader_factory import DownloaderFactory
 from database.DB.schemas.schemas import TableCreation
-
 from app.downloaders.sbi_downloader import SBIDownloader
 from app.core.factory.downloader_factory import DownloaderFactory
 
@@ -34,13 +28,6 @@ def main():
         # -------------------------
         # ALL AMCs
         # -------------------------
-
-        DatabaseConnection.check_connection()
-        TableCreation.create_tables()
-        amcs = [
-            # AMC.SBI,
-            AMC.QUANT
-        ]
 
         DatabaseConnection.check_connection()
         TableCreation.create_tables()
