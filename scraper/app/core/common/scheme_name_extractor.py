@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # import pandas as pd
 # import re
 
@@ -41,8 +40,7 @@
 #                             return cleaned
 
 #         return None
-=======
->>>>>>> e7cff4bbd380276c3eaf1f4f5b01ed1a426187ef
+
 import pandas as pd
 import re
 
@@ -54,7 +52,6 @@ class ExtractSchemeName:
 
         keywords = ["fund", "scheme", "plan", "growth", "direct"]
 
-<<<<<<< HEAD
         for row_idx, row in df.iterrows():
 
             values = [str(v).strip() if pd.notna(v) else "" for v in row.tolist()]
@@ -128,7 +125,7 @@ class ExtractSchemeName:
                     if "mutual fund" not in cell.lower():
 
                         cleaned = cell.strip()
-=======
+
         for _, row in df.iterrows():
 
             for cell in row:
@@ -154,7 +151,6 @@ class ExtractSchemeName:
                     if "mutual fund" not in text.lower():
 
                         cleaned = re.split(r"-|:", text)[0].strip()
->>>>>>> e7cff4bbd380276c3eaf1f4f5b01ed1a426187ef
 
                         if len(cleaned) > 5:
                             return cleaned
