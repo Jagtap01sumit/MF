@@ -16,7 +16,7 @@ class PortfolioProcessor:
             amc_id = get_or_create_amc(row["amc_name"])
 
             scheme_id = get_or_create_scheme(
-                amc_id, row["scheme_code"], row.get("scheme_name")
+                amc_id, row["scheme_code"], row.get("scheme_name"),row.get("fund_type")
             )
 
             industry_id = get_or_create_industry(row["industry"])
@@ -27,6 +27,7 @@ class PortfolioProcessor:
 
             insert_portfolio(
                 scheme_id=scheme_id,
+
                 stock_id=stock_id,
                 report_month=row["report_month"],
                 quantity=row["quantity"],

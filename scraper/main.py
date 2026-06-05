@@ -25,13 +25,12 @@ def main():
 
         manager = BrowserManager(browser)
 
-        # -------------------------
-        # ALL AMCs
-        # -------------------------
-
         DatabaseConnection.check_connection()
+        
         TableCreation.create_tables()
-        amcs = [AMC.QUANT, AMC.SBI]
+        amcs = [AMC.QUANT,
+                AMC.SBI
+                ]
 
         for amc in amcs:
 
@@ -53,13 +52,13 @@ def main():
 
         print(f"[MAIN ERROR] {e}")
 
-    # finally:
+    finally:
 
-    # if browser:
-    # browser.close()
+        if browser:
+            browser.close()
 
-    # if playwright:
-    # playwright.stop()
+        if playwright:
+            playwright.stop()
 
 
 if __name__ == "__main__":

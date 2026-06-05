@@ -19,7 +19,7 @@ class TableCreation:
             amc_name VARCHAR(255)
             UNIQUE
             NOT NULL,
-
+            
             created_at TIMESTAMP
             DEFAULT CURRENT_TIMESTAMP
         );
@@ -40,7 +40,7 @@ class TableCreation:
             NOT NULL,
 
             scheme_name TEXT,
-
+            fund_type TEXT,
             created_at TIMESTAMP
             DEFAULT CURRENT_TIMESTAMP
         );

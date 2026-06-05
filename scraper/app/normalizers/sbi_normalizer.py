@@ -30,8 +30,7 @@ class PortfolioNormalizer:
         for _, row in df.iterrows():
 
             stock_name = self.safe_str(row.get("stock_name", ""))
-            scheme_name = ExtractSchemeName.extract_scheme_name(df)
-            print(scheme_name + "name of schenme")
+           
             # Skip empty rows
             if not stock_name:
 
@@ -47,7 +46,8 @@ class PortfolioNormalizer:
 
             normalized_row = {
                 "scheme_code": self.safe_str(row.get("scheme_code", "")),
-                "scheme_name": scheme_name,
+                "scheme_name" : self.safe_str(row.get("scheme_name", "")),
+                "fund_type":str(row.get("fund_type","")).strip(),
                 "isin": self.safe_str(row.get("isin", "")),
                 "stock_name": stock_name,
                 "industry": self.safe_str(row.get("industry", "")),

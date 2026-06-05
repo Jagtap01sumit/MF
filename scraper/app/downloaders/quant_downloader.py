@@ -5,10 +5,11 @@ from datetime import datetime
 from app.core.common.file_downloader import DownloadManager
 from app.normalizers.quant_normalizer import PortfolioNormalizer
 from app.extractors.quant_extractor import QUANTExcelExtractor
-from app.exceptions.exception import FileNotFoundException, DownloadException
+from app.core.exceptions.exception import FileNotFoundException, DownloadException
 from database.DB.procedures.portfolio_procedures import PortfolioProcessor
 from app.core.common.report_date_extractor import ReportDateExtractor
-from database.DB.insert import insert_holdings
+
+# from database.DB.insert import insert_holdings
 from app.scrapers.quant.quant_config import QUANTConfig
 from app.core.common.amc_name_extractor import extract_amc_name
 
@@ -90,10 +91,6 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
             self.actions.wait(2000)
 
-            # self.open_latest_month()
-
-            self.actions.wait(2000)
-
             filepath = self.download_file()
             extractor = QUANTExcelExtractor()
 
@@ -102,10 +99,7 @@ class QuantDownloader(BaseDownloader, DownloadManager):
             print(df)
             print("before normalizer")
             print("name:" + df["scheme_name"].iloc[0])
-            normalizer = PortfolioNormalizer(
-                scheme_name=df["scheme_name"],
-                amc_name=df["amc_name"],
-            )
+            normalizer = PortfolioNormalizer()
 
             normalized_df = normalizer.normalize(df)
             date_extractor = ReportDateExtractor()
@@ -118,10 +112,9 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
             print(normalized_df.head())
             print("database connection")
-            # insert_holdings(normalized_df);
+        
             processor = PortfolioProcessor()
-            # amc_name = extract_amc_name(filepath)
-            # normalized_df["amc_name"] = amc_name
+          
 
             processor.process(normalized_df)
 
