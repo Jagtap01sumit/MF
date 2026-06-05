@@ -46,7 +46,7 @@ def get_or_create_amc(amc_name):
 # ==========================================================
 
 
-def get_or_create_scheme(amc_id, scheme_code, scheme_name=None):
+def get_or_create_scheme(amc_id, scheme_code, scheme_name=None,fund_type=None):
 
     query = text("""
 
@@ -54,7 +54,8 @@ def get_or_create_scheme(amc_id, scheme_code, scheme_name=None):
 
             amc_id,
             scheme_code,
-            scheme_name
+            scheme_name,
+            fund_type
 
         )
 
@@ -62,7 +63,8 @@ def get_or_create_scheme(amc_id, scheme_code, scheme_name=None):
 
             :amc_id,
             :scheme_code,
-            :scheme_name
+            :scheme_name,
+            :fund_type
         )
 
         ON CONFLICT(scheme_code)
@@ -75,7 +77,7 @@ def get_or_create_scheme(amc_id, scheme_code, scheme_name=None):
 
         conn.execute(
             query,
-            {"amc_id": amc_id, "scheme_code": scheme_code, "scheme_name": scheme_name},
+            {"amc_id": amc_id, "scheme_code": scheme_code, "scheme_name": scheme_name,"fund_type":fund_type},
         )
 
         result = conn.execute(

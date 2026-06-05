@@ -2,6 +2,7 @@ import pandas as pd
 
 from app.core.common.scheme_name_extractor import ExtractSchemeName
 from app.core.common.amc_name_extractor import extract_amc_name
+from app.core.common.extract_fund_type import extract_fund_type
 
 
 class QUANTExcelExtractor:
@@ -30,6 +31,7 @@ class QUANTExcelExtractor:
 
         ignore_keywords = ["Sub Total", "Total", "DERIVATIVES", "Unlisted"]
         scheme_name = ExtractSchemeName.extract_scheme_name(df)
+        fund_type = extract_fund_type(scheme_name)
         print(scheme_name + "scheme name")
         amc_name = extract_amc_name(df)
         print(amc_name + "amc name")
@@ -71,6 +73,7 @@ class QUANTExcelExtractor:
                     {
                         "scheme_code": sheet_name,
                         "scheme_name": scheme_name,
+                        "fund_type":fund_type,
                         "isin": isin,
                         "stock_name": instrument_name,
                         "industry": values[4],

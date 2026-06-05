@@ -3,8 +3,9 @@ from app.core.base_downloader import BaseDownloader
 from app.core.page_actions import PageActions
 from app.extractors.sbi_extractor import SBIExtractor
 from app.core.common.file_downloader import DownloadManager
-from app.exceptions.exception import FileNotFoundException, DownloadException
-from database.DB.insert import insert_holdings
+from app.core.exceptions.exception import FileNotFoundException, DownloadException
+
+# from database.DB.insert import insert_holdings
 from app.scrapers.sbi.sbi_config import SBIConfig
 from app.core.common.report_date_extractor import ReportDateExtractor
 from database.DB.procedures.portfolio_procedures import PortfolioProcessor

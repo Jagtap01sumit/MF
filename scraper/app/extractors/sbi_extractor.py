@@ -3,7 +3,7 @@ import pandas as pd
 from app.core.common.scheme_name_extractor import ExtractSchemeName
 from app.core.common.amc_name_extractor import extract_amc_name
 
-
+from app.core.common.extract_fund_type import extract_fund_type
 from app.core.common.scheme_name_extractor import ExtractSchemeName
 from app.core.common.amc_name_extractor import extract_amc_name
 
@@ -76,22 +76,7 @@ class SBIExtractor:
 
         return pd.DataFrame(all_data)
 
-        print(f"Sheets Found: {excel.sheet_names}")
-
-        print(f"length Sheet: {len(excel.sheet_names)}")
-        for sheet_name in excel.sheet_names:
-            # for sheet_name in sheets_to_process:
-
-            print(f"Processing Sheet: {sheet_name}")
-
-            df = pd.read_excel(file_path, sheet_name=sheet_name, header=None)
-
-            normalized_rows = self.process_sheet(df, sheet_name)
-
-            all_data.extend(normalized_rows)
-
-        return pd.DataFrame(all_data)
-
+    
     def process_sheet(self, df, sheet_name):
 
         extracted = []
@@ -99,6 +84,7 @@ class SBIExtractor:
         ignore_keywords = ["Sub Total", "Total", "DERIVATIVES", "Unlisted"]
         scheme_name = ExtractSchemeName.extract_scheme_name(df)
         print(f"scheme name: {scheme_name}")
+        fund_type = extract_fund_type(scheme_name)
         amc_name = extract_amc_name(df)
         print(f"amc name: {amc_name}")
         if len(df.columns) < 4:
@@ -143,6 +129,7 @@ class SBIExtractor:
                     {
                         "scheme_code": sheet_name,
                         "scheme_name": scheme_name,
+                        "fund_type":fund_type,
                         "isin": isin,
                         "stock_name": instrument_name,
                         "industry": values[4],
