@@ -1,14 +1,15 @@
 import pandas as pd
 
 from app.core.common.scheme_name_extractor import ExtractSchemeName
-# from app.core.common.amc_name_extractor import extract_amc_name
-from app.core.common.extract_fund_type import extract_fund_type
 from app.core.common.amc_name_extractor import ExtractAMCName
+from app.core.common.extract_fund_type import extract_fund_type
 
-class QUANTExcelExtractor:
+
+class PPFASExcelExtractor:
 
     def extract(self, file_path):
-
+       
+      
         excel = pd.ExcelFile(file_path)
 
         all_data = []
@@ -19,23 +20,20 @@ class QUANTExcelExtractor:
 
             df = pd.read_excel(file_path, sheet_name=sheet_name, header=None)
 
-            normalized_rows = self.process_sheet(df, sheet_name)
+            normalized_rows = self.process_sheet(df, sheet_name,file_path)
 
             all_data.extend(normalized_rows)
 
         return pd.DataFrame(all_data)
 
-    def process_sheet(self, df, sheet_name):
+    def process_sheet(self, df, sheet_name,file_path):
 
         extracted = []
-
+        amc_name = ExtractAMCName.extract_amc_name(df,file_path)
         ignore_keywords = ["Sub Total", "Total", "DERIVATIVES", "Unlisted"]
         scheme_name = ExtractSchemeName.extract_scheme_name(df)
         fund_type = extract_fund_type(scheme_name)
-        # print(scheme_name + "scheme name")
-        amc_name = ExtractAMCName.extract_amc_name(df)
-        # print(amc_name + "amc name")
-
+      
         for _, row in df.iterrows():
 
             values = []
@@ -54,9 +52,9 @@ class QUANTExcelExtractor:
             if all(v == "" for v in values):
                 continue
 
-            isin = values[1]
+            isin = values[2]
 
-            instrument_name = values[2]
+            instrument_name = values[1]
 
             # Ignore subtotal / section rows
             if any(
@@ -76,9 +74,9 @@ class QUANTExcelExtractor:
                         "fund_type":fund_type,
                         "isin": isin,
                         "stock_name": instrument_name,
-                        "industry": values[4],
-                        "quantity": values[5],
-                        "market_value": values[6],
+                        "industry": values[3],
+                        "quantity": values[4],
+                        "market_value": values[5],
                         "amc_name": amc_name,
                     }
                 )

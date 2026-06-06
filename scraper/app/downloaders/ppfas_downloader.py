@@ -4,17 +4,17 @@ from app.core.page_actions import PageActions
 from datetime import datetime
 from app.core.common.file_downloader import DownloadManager
 from app.normalizers.quant_normalizer import PortfolioNormalizer
-from app.extractors.quant_extractor import QUANTExcelExtractor
+from app.extractors.ppfas_extractor import PPFASExcelExtractor
 from app.core.exceptions.exception import FileNotFoundException, DownloadException
 from database.DB.procedures.portfolio_procedures import PortfolioProcessor
 from app.core.common.report_date_extractor import ReportDateExtractor
 
 # from database.DB.insert import insert_holdings
-from app.scrapers.quant.quant_config import QUANTConfig
+from app.scrapers.ppfas.ppfas_config import PPFASConfig
 # from app.core.common.amc_name_extractor import extract_amc_name
 
 
-class QuantDownloader(BaseDownloader, DownloadManager):
+class PPFASDownloader(BaseDownloader, DownloadManager):
 
     def __init__(self, page):
 
@@ -26,11 +26,11 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
         try:
 
-            portfolio_dropdown = self.actions.get_locator(
-                QUANTConfig.MONTHLY_PORTFOLIO_XPATH
+            portfolio_sidebarlink = self.actions.get_locator(
+                PPFASConfig.MONTHLY_PORTFOLIO_XPATH
             )
 
-            portfolio_dropdown.click()
+            portfolio_sidebarlink.click()
 
         except Exception as e:
 
@@ -42,7 +42,7 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
         try:
 
-            year_buttons = self.actions.get_locator(QUANTConfig.YEAR_XPATH)
+            year_buttons = self.actions.get_locator(PPFASConfig.YEAR_XPATH)
 
             latest_year = year_buttons
 
@@ -58,16 +58,38 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
         try:
 
-            download_button = self.actions.get_locator(QUANTConfig.MONTH_XPATH)
+            expanded_element = self.actions.get_locator(PPFASConfig.MONTH_XPATH)
 
-            with self.page.expect_download() as d:
+            if expanded_element.is_visible():
 
-                download_button.click()
+                with self.page.expect_download() as d:
 
-            download = d.value
+                    expanded_element.click();
 
-            filepath = self.save_download(download)
-            return filepath
+                download = d.value
+
+                filepath = self.save_download(download)
+                return filepath
+            else :
+                print("Section not expanded, clicking collapsed section")
+
+                collapse_element = self.actions.get_locator(PPFASConfig.COLLAPSE_XPATH);
+                collapse_element.click(0)
+                expanded_element = self.actions.get_locator(PPFASConfig.MONTH_XPATH)
+
+                if expanded_element.is_visible():
+
+                    with self.page.expect_download() as d:
+
+                        expanded_element.click();
+
+                    download = d.value
+
+                    filepath = self.save_download(download)
+                    return filepath
+                
+
+                print("Section expanded successfully")
 
         except Exception as e:
 
@@ -79,7 +101,7 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
         try:
 
-            self.actions.navigate(QUANTConfig.URL)
+            self.actions.navigate(PPFASConfig.URL)
 
             self.actions.wait(3000)
 
@@ -92,7 +114,7 @@ class QuantDownloader(BaseDownloader, DownloadManager):
             self.actions.wait(2000)
 
             filepath = self.download_file()
-            extractor = QUANTExcelExtractor()
+            extractor = PPFASExcelExtractor()
 
             df = extractor.extract(filepath)
 
@@ -122,6 +144,6 @@ class QuantDownloader(BaseDownloader, DownloadManager):
 
         except Exception as e:
 
-            print(f"[ERROR] Quant download flow failed: {e}")
+            print(f"[ERROR] PPFAS download flow failed: {e}")
 
-            raise DownloadException("Quant portfolio download process failed.")
+            raise DownloadException("PPFAS portfolio download process failed.")

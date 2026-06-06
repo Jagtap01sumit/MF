@@ -683,3 +683,6 @@ class SBIExtractor:
         }
     ```
 ````
+
+https://amc.ppfas.com/downloads/factsheet/
+https://www.axismf.com/statutory-disclosures/monthly-portfolio-disclosures

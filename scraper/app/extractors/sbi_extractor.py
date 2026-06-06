@@ -1,11 +1,11 @@
 import pandas as pd
 
 from app.core.common.scheme_name_extractor import ExtractSchemeName
-from app.core.common.amc_name_extractor import extract_amc_name
+
 
 from app.core.common.extract_fund_type import extract_fund_type
 from app.core.common.scheme_name_extractor import ExtractSchemeName
-from app.core.common.amc_name_extractor import extract_amc_name
+from app.core.common.amc_name_extractor import ExtractAMCName
 
 
 class SBIExtractor:
@@ -85,7 +85,7 @@ class SBIExtractor:
         scheme_name = ExtractSchemeName.extract_scheme_name(df)
         print(f"scheme name: {scheme_name}")
         fund_type = extract_fund_type(scheme_name)
-        amc_name = extract_amc_name(df)
+        amc_name = ExtractAMCName.extract_amc_name(df)
         print(f"amc name: {amc_name}")
         if len(df.columns) < 4:
             print(f"Skipping sheet {sheet_name} - less than 4 columns")

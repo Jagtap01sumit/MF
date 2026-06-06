@@ -4,6 +4,7 @@ class AMC:
 
     QUANT = "quant"
 
+    PPFAS = "ppfas"
     # HDFC = "hdfc"
 
     # ICICI = "icici"
