@@ -126,7 +126,25 @@ class ReportDateExtractor:
 
                 if pd.notnull(parsed_date):
                     return parsed_date.strftime("%Y-%m-01")
+                
+                
+            filename_match = re.search(
+                r"([A-Za-z]+)[-_ ](\d{1,2})[-_ ](\d{4})",
+                filename,
+                re.IGNORECASE,
+            )
 
+            if filename_match:
+                month = filename_match.group(1)
+                day = filename_match.group(2)
+                year = filename_match.group(3)
+
+                date_str = f"{month} {day} {year}"
+
+                parsed_date = pd.to_datetime(date_str, errors="coerce")
+
+                if pd.notnull(parsed_date):
+                    return parsed_date.strftime("%Y-%m-01")    
             return None
 
         except Exception as e:

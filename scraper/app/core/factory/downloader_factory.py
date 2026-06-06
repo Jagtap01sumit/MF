@@ -1,9 +1,10 @@
 from app.config.constant import AMC
 
 from app.downloaders.sbi_downloader import SBIDownloader
-
-
 from app.downloaders.quant_downloader import QuantDownloader
+
+
+from app.downloaders.ppfas_downloader import PPFASDownloader
 
 
 class DownloaderFactory:
@@ -16,5 +17,8 @@ class DownloaderFactory:
 
         elif amc_name == AMC.QUANT:
             return QuantDownloader(page)
+        
+        elif amc_name == AMC.PPFAS:
+            return PPFASDownloader(page)
 
         raise ValueError(f"Unsupported AMC: {amc_name}")

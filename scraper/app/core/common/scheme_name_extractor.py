@@ -204,4 +204,4 @@ class ExtractSchemeName:
                         if len(cleaned) > 5:
                             return cleaned
 
-        return None
+        return df.iloc[0, 1]
