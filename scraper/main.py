@@ -1,21 +1,13 @@
-from app.browser.playwright_factory import (
-    PlaywrightFactory
-)
+from app.browser.playwright_factory import PlaywrightFactory
+from database.test_connections import DatabaseConnection
+from app.browser.browser_manager import BrowserManager
+from app.core.factory.downloader_factory import DownloaderFactory
+from database.DB.schemas.schemas import TableCreation
 
-from app.browser.browser_manager import (
-    BrowserManager
-)
 
-from app.downloaders.sbi_downloader import (
-    SBIDownloader
-)
-from app.core.factory.downloader_factory import (
-    DownloaderFactory
-)
 
 from app.config.constant import AMC
-
-
+import os
 
 
 def main():
@@ -25,67 +17,50 @@ def main():
 
     try:
 
-        playwright, browser = (
-            PlaywrightFactory.launch_browser(
-                headless=False
-            )
-        )
+        playwright, browser = PlaywrightFactory.launch_browser(headless=False)
 
         manager = BrowserManager(browser)
 
-        # -------------------------
-        # ALL AMCs
-        # -------------------------
-
+        DatabaseConnection.check_connection()
+        
+        TableCreation.create_tables()
         amcs = [
-            AMC.SBI,
-            AMC.QUANT
-        ]
+            AMC.QUANT,
+                AMC.SBI,
+                AMC.PPFAS
+                ]
 
         for amc in amcs:
 
             try:
-
-                print(
-                    f"\n[INFO] Starting download for: {amc}"
-                )
-
+                print(f"\n[INFO] Starting download for: {amc}")
                 page = manager.create_page()
 
-                downloader = (
-                    DownloaderFactory.get_downloader(
-                        amc,
-                        page
-                    )
-                )
-
-                file_path = (
-                    downloader.download_latest_portfolio()
-                )
-
-                print(
-                    f"[SUCCESS] {amc} Downloaded: {file_path}"
-                )
+                downloader = DownloaderFactory.get_downloader(amc, page)
+               
+                file_path = downloader.download_latest_portfolio()
+               
+                # print(os.getcwd())
+                # file_path=downloader.download_latest_portfolio(
+                #    manual_file_path = r"app\downloads\All-Schemes-Monthly-Portfolio---as-on-30th-April-2026.xlsx"
+                # )
+                print(f"[SUCCESS] {amc} Downloaded: {file_path}")
 
             except Exception as e:
 
-                print(
-                    f"[ERROR] Failed for {amc}: {e}"
-                )
+                print(f"[ERROR] Failed for {amc}: {e}")
 
     except Exception as e:
 
-        print(
-            f"[MAIN ERROR] {e}"
-        )
+        print(f"[MAIN ERROR] {e}")
 
-    # finally:
+    finally:
 
-        # if browser:
-            # browser.close()
+        if browser:
+            browser.close()
 
-        # if playwright:
-            # playwright.stop()
+        if playwright:
+            playwright.stop()
 
 
 if __name__ == "__main__":

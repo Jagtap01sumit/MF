@@ -1,21 +1,20 @@
 from app.core.base_downloader import BaseDownloader
 
 from app.core.page_actions import PageActions
+from datetime import datetime
+from app.core.common.file_downloader import DownloadManager
+from app.normalizers.quant_normalizer import PortfolioNormalizer
+from app.extractors.quant_extractor import QUANTExcelExtractor
+from app.core.exceptions.exception import FileNotFoundException, DownloadException
+from database.DB.procedures.portfolio_procedures import PortfolioProcessor
+from app.core.common.report_date_extractor import ReportDateExtractor
 
-from app.core.file_downloader import DownloadManager
-
-from app.exceptions.exception import (
-    FileNotFoundException,
-    DownloadException
-)
-
+# from database.DB.insert import insert_holdings
 from app.scrapers.quant.quant_config import QUANTConfig
+# from app.core.common.amc_name_extractor import extract_amc_name
 
 
-class QuantDownloader(
-    BaseDownloader,
-    DownloadManager
-):
+class QuantDownloader(BaseDownloader, DownloadManager):
 
     def __init__(self, page):
 
@@ -27,33 +26,23 @@ class QuantDownloader(
 
         try:
 
-            portfolio_dropdown = (
-                self.actions.get_locator(
-                    QUANTConfig.MONTHLY_PORTFOLIO_XPATH
-                )
+            portfolio_dropdown = self.actions.get_locator(
+                QUANTConfig.MONTHLY_PORTFOLIO_XPATH
             )
 
             portfolio_dropdown.click()
 
         except Exception as e:
 
-            print(
-                f"[ERROR] Failed to open monthly portfolio: {e}"
-            )
+            print(f"[ERROR] Failed to open monthly portfolio: {e}")
 
-            raise DownloadException(
-                "Unable to open monthly portfolio section."
-            )
+            raise DownloadException("Unable to open monthly portfolio section.")
 
     def open_latest_year(self):
 
         try:
 
-            year_buttons = (
-                self.actions.get_locator(
-                    QUANTConfig.YEAR_XPATH
-                )
-            )
+            year_buttons = self.actions.get_locator(QUANTConfig.YEAR_XPATH)
 
             latest_year = year_buttons
 
@@ -61,24 +50,15 @@ class QuantDownloader(
 
         except Exception as e:
 
-            print(
-                f"[ERROR] Failed to open latest year: {e}"
-            )
+            print(f"[ERROR] Failed to open latest year: {e}")
 
-            raise DownloadException(
-                "Unable to open latest year."
-            )
-
+            raise DownloadException("Unable to open latest year.")
 
     def download_file(self):
 
         try:
 
-            download_button = (
-                self.actions.get_locator(
-                    QUANTConfig.MONTH_XPATH
-                )
-            )
+            download_button = self.actions.get_locator(QUANTConfig.MONTH_XPATH)
 
             with self.page.expect_download() as d:
 
@@ -86,25 +66,20 @@ class QuantDownloader(
 
             download = d.value
 
-            return self.save_download(download)
+            filepath = self.save_download(download)
+            return filepath
 
         except Exception as e:
 
-            print(
-                f"[ERROR] Failed to download file: {e}"
-            )
+            print(f"[ERROR] Failed to download file: {e}")
 
-            raise DownloadException(
-                "Unable to download latest portfolio file."
-            )
+            raise DownloadException("Unable to download latest portfolio file.")
 
     def download_latest_portfolio(self):
 
         try:
 
-            self.actions.navigate(
-                QUANTConfig.URL
-            )
+            self.actions.navigate(QUANTConfig.URL)
 
             self.actions.wait(3000)
 
@@ -116,18 +91,37 @@ class QuantDownloader(
 
             self.actions.wait(2000)
 
-            # self.open_latest_month()
+            filepath = self.download_file()
+            extractor = QUANTExcelExtractor()
 
-            self.actions.wait(2000)
+            df = extractor.extract(filepath)
 
-            return self.download_file()
+            print(df)
+            print("before normalizer")
+            print("name:" + df["scheme_name"].iloc[0])
+            normalizer = PortfolioNormalizer()
+
+            normalized_df = normalizer.normalize(df)
+            date_extractor = ReportDateExtractor()
+
+            report_month = date_extractor.extract_report_month(filepath)
+
+            print(report_month)
+            normalized_df["report_month"] = report_month
+            print("after normalizer")
+
+            print(normalized_df.head())
+            print("database connection")
+        
+            processor = PortfolioProcessor()
+          
+
+            processor.process(normalized_df)
+
+            return filepath
 
         except Exception as e:
 
-            print(
-                f"[ERROR] Quant download flow failed: {e}"
-            )
+            print(f"[ERROR] Quant download flow failed: {e}")
 
-            raise DownloadException(
-                "Quant portfolio download process failed."
-            )
+            raise DownloadException("Quant portfolio download process failed.")
