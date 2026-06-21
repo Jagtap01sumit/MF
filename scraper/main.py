@@ -7,6 +7,7 @@ from database.DB.schemas.schemas import TableCreation
 
 
 from app.config.constant import AMC
+import os
 
 
 def main():
@@ -36,9 +37,13 @@ def main():
                 page = manager.create_page()
 
                 downloader = DownloaderFactory.get_downloader(amc, page)
-
+               
                 file_path = downloader.download_latest_portfolio()
-
+               
+                # print(os.getcwd())
+                # file_path=downloader.download_latest_portfolio(
+                #    manual_file_path = r"app\downloads\All-Schemes-Monthly-Portfolio---as-on-30th-April-2026.xlsx"
+                # )
                 print(f"[SUCCESS] {amc} Downloaded: {file_path}")
 
             except Exception as e:
