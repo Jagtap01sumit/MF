@@ -29,6 +29,7 @@ class PPFASExcelExtractor:
     def process_sheet(self, df, sheet_name,file_path):
 
         extracted = []
+        VALID_ISIN_PREFIXES = ("INE", "INF", "IDIA")
         amc_name = ExtractAMCName.extract_amc_name(df,file_path)
         ignore_keywords = ["Sub Total", "Total", "DERIVATIVES", "Unlisted"]
         scheme_name = ExtractSchemeName.extract_scheme_name(df)
@@ -65,8 +66,8 @@ class PPFASExcelExtractor:
 
             # normalized_df["amc_name"] = amc_name
             # Actual stock rows
-            if isin.startswith("INE"):
-
+             
+            if isin.startswith(VALID_ISIN_PREFIXES):
                 extracted.append(
                     {
                         "scheme_code": sheet_name,

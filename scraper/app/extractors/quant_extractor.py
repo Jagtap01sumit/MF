@@ -28,7 +28,7 @@ class QUANTExcelExtractor:
     def process_sheet(self, df, sheet_name):
 
         extracted = []
-
+        VALID_ISIN_PREFIXES = ("INE", "INF", "IDIA")
         ignore_keywords = ["Sub Total", "Total", "DERIVATIVES", "Unlisted"]
         scheme_name = ExtractSchemeName.extract_scheme_name(df)
         fund_type = extract_fund_type(scheme_name)
@@ -65,9 +65,10 @@ class QUANTExcelExtractor:
             ):
                 continue
 
-            # normalized_df["amc_name"] = amc_name
-            # Actual stock rows
-            if isin.startswith("INE"):
+        #    if len(isin) >= 10 and isin.isalnum():
+        #         extracted.append(...)
+
+            if isin.startswith(VALID_ISIN_PREFIXES):
 
                 extracted.append(
                     {
